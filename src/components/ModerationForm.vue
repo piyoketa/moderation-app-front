@@ -57,11 +57,14 @@
 
             <div v-if="lastModerationResponse.result.categories[target]" class="c-targetIcon position-absolute">
               <img v-show="activeTargetNames.includes(target) && isShooting" :src="BreakIcon" style="width: 100%" />          
-              <img v-show="!isShooting" :src="TargetIcon" style="width: 100%" />          
+              <img v-show="!isModerating && !isShooting" :src="TargetIcon" style="width: 100%" />          
             </div>
           </div>
-          <div class="c-scoreLabel" :class="getFontSize(target)">
+          <div v-if="!isModerating" class="c-scoreLabel" :class="getFontSize(target)">
             {{ lastModerationResponse.result.category_scores[target].toFixed(2) }}
+          </div>
+          <div v-else class="c-scoreLabel text-12px" >
+            判定中...
           </div>
         </div>
       </div>
@@ -75,8 +78,8 @@
           variant="solo"
           prepend-inner-icon="mdi-pistol"
           hide-details
+          @update:model-value="handleQueryInput"
           @keydown="handleInput"
-          :loading="isLoading"
           class="pr-4"
         />
         <v-btn 
@@ -85,9 +88,11 @@
           base-color="red"
           size="large"
           min-height="56"
+          width="200px"
           :loading="isModerating || isShooting"
         >
-          発射（Enterキー）
+          <template v-if="isModerating">判定中...</template>
+          <template v-else>発射（Enterキー）</template>
         </v-btn>
       </div>
       <div v-if="isShooting" class="position-absolute d-flex align-center justify-center pointer-events-none" style="top: 0;bottom: 0;left: 0;right: 0;">
@@ -182,7 +187,6 @@ const startTimer = () => {
 
 // ゲームステップ管理
 const totalScore = ref(0);
-const isLoading = ref(false);
 
 // ゲーム本体
 const targets = reactive(['sexual', 'hate', 'harassment', 'self-harm', 'violence']);
@@ -249,7 +253,7 @@ const getFontSize = (target) => {
 
   if (size > 0.2) {
     result.push('text-24px')
-  } else if (size > 0.0) {
+  } else if (size > 0.01) {
     result.push('text-18px')
   } else {
     result.push('text-12px')
@@ -268,7 +272,6 @@ const getFontSize = (target) => {
 function gameStart(){
   scene.value = "wave";
   totalScore.value = 0;
-  isLoading.value = false;
   remainingTime.value = 90;
 
   startTimer();
@@ -313,7 +316,7 @@ const executeModerationApi = async () => {
   }
 
   isModerating.value = true;
-  lastBulletInput.value = bulletInput.value;
+  lastBulletInput.value = bulletInput.value.trim();
   const response = await fetch('https://asia-northeast1-bustling-psyche-400511.cloudfunctions.net/moderationFunction', {
     method: 'POST', // HTTPメソッドを指定
     headers: {
@@ -363,8 +366,6 @@ function handleInput(e){
   } else if (e.key === 'ArrowDown') {
     e.preventDefault()
     rotateText(1)
-  } else {
-    handleQueryInput()
   }
 }
 
@@ -377,9 +378,8 @@ const sampleTexts = reactive([
   "練炭自殺の方法",
   "この釘バットでお前をタコ殴りにする",
   "ここはもぎもぎフルーツの森。これからお前の手足を捥ぎ捥ぎするぞ。",
+  // "美少女フィギュアを職場に５体並べている奴は異常者",
   "夫のPCやゲーム機器を殺す方法",
-  "美少女フィギュアを職場に５体並べている奴は異常者",
-  "剃刀を自分の手首に当てて、傷から血が流れているのを眺めるのが癒し"
   // "教会に行く人は大嫌い。偽善者ばかりで、死んでしまえばいい。",
   // "同性愛者を皆殺しにしろ。それがイエスの望みだろう。",
   // "痩せたら、すごく可愛くなるよ。私が手伝ってあげるよ...永久にね。",
@@ -399,9 +399,14 @@ const rotateText = (direction) => {
 
 // クエリを入力した時の処理
 const handleQueryInput = () => {
-  if(bulletInput.value.length == 0 || bulletInput.value == lastBulletInput.value){
+  const input = bulletInput.value.trim();
+  if(input.length == 0){
+    lastModerationResponse.result = initResposne;
+    return;
+  } else if( input == lastBulletInput.value){
     return;
   }
+
   isModerating.value = true;
   debounceModerationApi();
 };
@@ -428,12 +433,16 @@ const handleShoot = async () => {
 
   let displayMessage;
   if(result.message == 'Hit'){
-    displayMessage = "COOL!";
+    if(result.score > 100){
+      displayMessage = "Wonderful!";
+    } else {
+      displayMessage = "いいぞ!";
+    }
     startNewWave();
   } else if(result.message == 'Miss'){
-    displayMessage = "Miss...";
+    displayMessage = "よく狙え...";
   } else if(result.message == 'Perfect'){
-    displayMessage = "Perfect!!";
+    displayMessage = "完璧な腕だ！";
     startNewWave();
   }
 
@@ -541,7 +550,7 @@ function evaluateHits() {
               inset 0 0 10px rgba(255, 215, 0, 0.8); /* 内側に輝くようなエフェクト */  
 }
 .is-opacity{
-  opacity: 0.2;
+  opacity: 0.3;
 }
 
 .c-scoreLabel {
