@@ -56,8 +56,8 @@
             </v-avatar>
 
             <div v-if="lastModerationResponse.result.categories[target]" class="c-targetIcon position-absolute">
-              <img v-if="isShooting" :src="BreakIcon" style="width: 100%" />          
-              <img v-else :src="TargetIcon" style="width: 100%" />          
+              <img v-show="isShooting" :src="BreakIcon" style="width: 100%" />          
+              <img v-show="!isShooting" :src="TargetIcon" style="width: 100%" />          
             </div>
           </div>
           <div class="c-scoreLabel" :class="getFontSize(target)">
@@ -107,7 +107,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 
 // img
 import HitmanImage from "../assets/hitman.png"
@@ -119,6 +119,21 @@ import SexualIcon from "../assets/sexual_2.png"
 import SelfHarmIcon from "../assets/self-harm_2.png"
 import HarassmentIcon from "../assets/harassment.jpg"
 import HateIcon from "../assets/hate.png"
+
+// プリロード用の画像を定義
+const preloadImages = () => {
+  const images = [
+    HitmanImage, BreakIcon, TargetIcon, ViolenceIcon, SexualIcon, SelfHarmIcon, HarassmentIcon, HateIcon
+  ];
+  
+  images.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+};
+onMounted(() => {
+  preloadImages();
+});
 
 function targetImg(target){
   if(target == "violence"){
@@ -176,7 +191,7 @@ const activeTargets = reactive([]);
 const isModerating = ref(false);
 const message = ref("");
 const bulletInput = ref('お嬢ちゃん。服を脱いで。今からこの熱い弾丸を君の内にぶち込むぜ。');
-const lastBulletInput = ref('');
+const lastBulletInput = ref('お嬢ちゃん。服を脱いで。今からこの熱い弾丸を君の内にぶち込むぜ。');
 const firstResult = {
     "flagged": true,
     "categories": {
@@ -384,6 +399,9 @@ const rotateText = (direction) => {
 
 // クエリを入力した時の処理
 const handleQueryInput = () => {
+  if(bulletInput.value.length == 0 || bulletInput.value == lastBulletInput.value){
+    return;
+  }
   isModerating.value = true;
   debounceModerationApi();
 };
