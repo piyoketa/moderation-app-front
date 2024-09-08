@@ -2,17 +2,17 @@
   <div class="l-main">
     <div v-if="scene == 'title'" @click="scene = 'introduction'" class="l-top d-flex flex-column justify-center position-relative h-100">
       <!-- <img :src="TopImage" class="position-absolute"> -->
-      <p class="outlined-text" style="font-size: 100px">
-        有害コンテンツ<br>
+      <p class="outlined-text" style="font-size: 100px;">
+        <span style="font-family: 'isemin'; color: #cc0022">有害</span>コンテンツ<br>
         シューティング
       </p>
       <p style="margin-top: 20px; font-size:30px;">はじめる</p>
     </div>
     <div v-if="scene == 'introduction'" @click="gameStart()" class="l-introduction d-flex flex-column justify-center position-relative h-100">
       <div class="outlined-text" style="z-index: 1">
-        <h1>標的に合わせて<span style="font-size: 1.5em; color: red; font-family: 'isego'">キケンな文章</span>を撃て!</h1>
+        <h1>標的に合わせて<span style="font-size: 1.5em; color: #cc0022; font-family: 'isemin'">キケンな文章</span>を撃て!</h1>
         <p class="mt-5">
-          君が入力した文章が<span style="font-size: 1.5em; font-family: 'isego'">有害</span>かどうか、OpenAI（Moderation API）が判定するぞ！
+          君が入力した文章が<span style="font-size: 1.5em; font-family: 'isemin'">有害</span>かどうか、OpenAI（Moderation API）が判定するぞ！
         </p>
         <p class="mt-5">
           <span style="font-size: 1.5em;">標的は５種類</span><br>
@@ -30,7 +30,7 @@
         </p>
         <p class="mt-5">
           作者が思っていたよりModeration APIの感度は低い！<br>
-          <span style="font-size: 1.5em; font-family: 'isego'">露骨に有害な文章</span>じゃないと反応しないぞ！（単語だとダメ...）
+          <span style="font-size: 1.5em; font-family: 'isemin'">露骨に有害な文章</span>じゃないと反応しないぞ！（単語だとダメ...）
         </p>
         <p style="margin-top: 20px; font-size:30px;">クリックで開始</p>
       </div>
@@ -71,8 +71,7 @@
           </div>
         </div>
       </div>
-      <h2 class="font-weight-bold mb-4 d-flex justify-center align-center" style="height:100px;width:600px; margin-left: auto;text-align: left;font-size: 30px;z-index: 10;">
-        {{ message }}
+      <h2 v-html="message" class="font-weight-bold mb-4 d-flex justify-center align-center" style="height:100px;width:600px; margin-left: auto;text-align: left;font-size: 30px;z-index: 10;">
       </h2>
       <div class="d-flex align-center">
         <v-text-field
@@ -105,9 +104,34 @@
       </div>
     </div>
     <div v-else-if="scene == 'gameover'" @click="scene = 'title'" class="d-flex flex-column justify-center position-relative h-100">
-      <h1 style="font-family: 'isemin'">Game Over</h1>
+      <img :src="HitmanImage" class="position-absolute" style="bottom: -15px;left: -30px;width: 400px;">
+      <h1 style="font-family: 'isemin'">ミッション終了</h1>
       <h2>スコア:{{ totalScore }}</h2>
       <p style="margin-top: 20px;">クリックでタイトルへ</p>
+      <div v-if="totalScore < 300" class="position-absolute text-left" style="left:0; right:0; bottom:0;">
+        ルールが難しかったか？<br>
+        文章入力中に↑↓キーでサンプルの文章が見れるぞ。
+      </div>
+      <div v-else-if="totalScore < 700" class="position-absolute text-left" style="left:0; right:0; bottom:0;">
+        悪くない成果だ。<br>
+        お前はまだまだ成長するぞ。
+      </div>
+      <div v-else-if="totalScore < 1000" class="position-absolute text-left" style="left:0; right:0; bottom:0;">
+        いい腕を見せてもらった。<br>
+        またお前と一緒に仕事がしたいな。
+      </div>
+      <div v-else-if="totalScore < 1500" class="position-absolute text-left" style="left:0; right:0; bottom:0;">
+        文句なしの成果だ。<br>
+        お前は俺を越えるスナイパーになる。
+      </div>
+      <div v-else-if="totalScore < 2000" class="position-absolute text-left" style="left:0; right:0; bottom:0;">
+        驚くべき成果だ。<br>
+        よくここまで戦ってくれた。お前に敬意を表する。
+      </div>
+      <div v-else class="position-absolute text-left" style="left:0; right:0; bottom:0;">
+        信じられない高得点だな。<br>
+        こんな点数が取れるなんて、誰も夢にも思っていなかっただろう。
+      </div>
     </div>
     <audio ref="shootSound" :src="shootSoundFile" preload="auto"></audio>
     <audio ref="reloadSound" :src="reloadSoundFile" preload="auto"></audio>
@@ -200,13 +224,7 @@ const targets = reactive(['sexual', 'hate', 'harassment', 'self-harm', 'violence
 
 const activeTargets = reactive([]);
 const isModerating = ref(false);
-const message = ref(
-  getRandomElement([
-    "ミッションスタートだ...",
-    "照準を標的に合わせるんだ...",
-    "標的に照準を合わせるんだ...",
-  ])
-);
+const message = ref("");
 const bulletInput = ref('お嬢ちゃん。服を脱いで。今からこの熱い弾丸を君の内にぶち込むぜ。');
 const lastBulletInput = ref('お嬢ちゃん。服を脱いで。今からこの熱い弾丸を君の内にぶち込むぜ。');
 const firstResult = {
@@ -285,11 +303,7 @@ const getFontSize = (target) => {
 function gameStart(){
   scene.value = "wave";
   totalScore.value = 0;
-  message.value = getRandomElement([
-    "ミッションスタートだ...",
-    "照準を標的に合わせるんだ...",
-    "標的に照準を合わせるんだ...",
-  ]);
+  message.value = "ミッションスタートだ...<br>標的に照準を合わせて発射しろ。"
   // remainingTime.value = 90;
 
   // startTimer();

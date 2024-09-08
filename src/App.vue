@@ -21,12 +21,6 @@ export default {
   font-weight: normal; /* 通常の太さのフォント */
   font-style: normal; /* 通常のスタイル（イタリックでない） */
 }
-@font-face {
-  font-family: 'isego'; /* フォントの名前（任意） */
-  src: url('assets/Isego.otf') format('opentype'); /* フォントのパスと形式を指定 */
-  font-weight: normal; /* 通常の太さのフォント */
-  font-style: normal; /* 通常のスタイル（イタリックでない） */
-}
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
