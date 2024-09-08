@@ -10,12 +10,12 @@
     </div>
     <div v-if="scene == 'introduction'" @click="gameStart()" class="l-introduction d-flex flex-column justify-center position-relative h-100">
       <div class="outlined-text" style="z-index: 1">
-        <h1>お題に沿った<span style="font-size: 1.5em; color: red; font-family: 'isego'">キケンな文章</span>を撃て!</h1>
+        <h1>標的に合わせて<span style="font-size: 1.5em; color: red; font-family: 'isego'">キケンな文章</span>を撃て!</h1>
         <p class="mt-5">
           君が入力した文章が<span style="font-size: 1.5em; font-family: 'isego'">有害</span>かどうか、OpenAI（Moderation API）が判定するぞ！
         </p>
         <p class="mt-5">
-          <span style="font-size: 1.5em;">お題は５つ</span><br>
+          <span style="font-size: 1.5em;">標的は５種類</span><br>
           sexual（性的）<br>
           hate（ヘイト）<br>
           harassment（嫌がらせ）<br>
@@ -23,14 +23,14 @@
           violence（暴力）<br>
         </p>
         <p class="mt-5">
-          <span style="font-size: 1.5em;">白枠のお題</span>に当てれば+100点、<span style="font-size: 1.5em;">黄金のお題</span>なら+300点だ！
+          <span style="font-size: 1.5em;">白枠の標的</span>に当てれば+100点、<span style="font-size: 1.5em;">黄金の標的</span>なら+300点だ！
         </p>
         <p>
-          同時に<span style="font-size: 1.5em;">複数</span>のお題に当てれば点数が増えるぞ！
+          同時に<span style="font-size: 1.5em;">複数</span>の標的に当てれば点数が増えるぞ！
         </p>
         <p class="mt-5">
           作者が思っていたよりModeration APIの感度は低い！<br>
-          <span style="font-size: 1.5em; font-family: 'isego'">露骨に有害な文章</span>じゃないと反応しないぞ！
+          <span style="font-size: 1.5em; font-family: 'isego'">露骨に有害な文章</span>じゃないと反応しないぞ！（単語だとダメ...）
         </p>
         <p style="margin-top: 20px; font-size:30px;">クリックで開始</p>
       </div>
@@ -38,7 +38,10 @@
     <div v-if="scene == 'wave'" class="d-flex flex-column position-relative h-100">
       <img :src="HitmanImage" class="position-absolute" style="bottom: -15px;left: -30px;width: 400px;">
       <div class="text-left">
-        <h2 class="font-weight-bold mb-8">スコア: {{ totalScore }} 残り時間:{{ formattedTime }}秒</h2>
+        <h2 class="font-weight-bold" :class="{'text--red': bulletSize == 1}">
+          弾数：{{ bulletSize }}/5
+        </h2>
+        <h2 class="font-weight-bold mb-4">スコア: {{ totalScore }}</h2>
       </div>
       <div class="d-flex" style="min-height: 300px;">
         <div v-for="target in targets" :key="target" class="flex-grow-1 d-flex flex-column align-center mb-5">
@@ -68,7 +71,7 @@
           </div>
         </div>
       </div>
-      <h2 class="font-weight-bold mb-5" style="height:100px;width:600px; margin-left: auto;text-align: left;font-size: 60px;z-index: 10;">
+      <h2 class="font-weight-bold mb-4 d-flex justify-center align-center" style="height:100px;width:600px; margin-left: auto;text-align: left;font-size: 30px;z-index: 10;">
         {{ message }}
       </h2>
       <div class="d-flex align-center">
@@ -88,11 +91,11 @@
           base-color="red"
           size="large"
           min-height="56"
-          width="200px"
+          width="120px"
           :loading="isModerating || isShooting"
         >
           <template v-if="isModerating">判定中...</template>
-          <template v-else>発射（Enterキー）</template>
+          <template v-else>発射</template>
         </v-btn>
       </div>
       <div v-if="isShooting" class="position-absolute d-flex align-center justify-center pointer-events-none" style="top: 0;bottom: 0;left: 0;right: 0;">
@@ -124,6 +127,9 @@ import SexualIcon from "../assets/sexual_2.png"
 import SelfHarmIcon from "../assets/self-harm_2.png"
 import HarassmentIcon from "../assets/harassment.jpg"
 import HateIcon from "../assets/hate.png"
+
+// Utility
+const getRandomElement = arr => arr[Math.floor(Math.random() * arr.length)];
 
 // プリロード用の画像を定義
 const preloadImages = () => {
@@ -166,34 +172,41 @@ const reloadSound = ref(null);
 const scene = ref('title');
 
 // 残り時間管理
-const remainingTime = ref(30.0);
-const formattedTime = computed(() => remainingTime.value.toFixed(1));
-const isTimerActive = ref(false);
-let timerInterval = null;
-const startTimer = () => {
-  if (isTimerActive.value) return;  // すでにタイマーが動いている場合は何もしない
+// const remainingTime = ref(30.0);
+// const formattedTime = computed(() => remainingTime.value.toFixed(1));
+// const isTimerActive = ref(false);
+// let timerInterval = null;
+// const startTimer = () => {
+//   if (isTimerActive.value) return;  // すでにタイマーが動いている場合は何もしない
 
-  isTimerActive.value = true;
-  timerInterval = setInterval(() => {
-    if (remainingTime.value > 0) {
-      remainingTime.value = parseFloat((remainingTime.value - 0.1).toFixed(1)); // 0.1秒ずつ減少
-    } else {
-      clearInterval(timerInterval);  // タイマーが0になったら停止
-      isTimerActive.value = false;
-      scene.value = 'gameover'
-    }
-  }, 100);  // 100ms (0.1秒) ごとに更新
-};
+//   isTimerActive.value = true;
+//   timerInterval = setInterval(() => {
+//     if (remainingTime.value > 0) {
+//       remainingTime.value = parseFloat((remainingTime.value - 0.1).toFixed(1)); // 0.1秒ずつ減少
+//     } else {
+//       clearInterval(timerInterval);  // タイマーが0になったら停止
+//       isTimerActive.value = false;
+//       scene.value = 'gameover'
+//     }
+//   }, 100);  // 100ms (0.1秒) ごとに更新
+// };
 
 // ゲームステップ管理
 const totalScore = ref(0);
+const bulletSize = ref(5);
 
 // ゲーム本体
 const targets = reactive(['sexual', 'hate', 'harassment', 'self-harm', 'violence']);
 
 const activeTargets = reactive([]);
 const isModerating = ref(false);
-const message = ref("");
+const message = ref(
+  getRandomElement([
+    "ミッションスタートだ...",
+    "照準を標的に合わせるんだ...",
+    "標的に照準を合わせるんだ...",
+  ])
+);
 const bulletInput = ref('お嬢ちゃん。服を脱いで。今からこの熱い弾丸を君の内にぶち込むぜ。');
 const lastBulletInput = ref('お嬢ちゃん。服を脱いで。今からこの熱い弾丸を君の内にぶち込むぜ。');
 const firstResult = {
@@ -272,9 +285,14 @@ const getFontSize = (target) => {
 function gameStart(){
   scene.value = "wave";
   totalScore.value = 0;
-  remainingTime.value = 90;
+  message.value = getRandomElement([
+    "ミッションスタートだ...",
+    "照準を標的に合わせるんだ...",
+    "標的に照準を合わせるんだ...",
+  ]);
+  // remainingTime.value = 90;
 
-  startTimer();
+  // startTimer();
   startNewWave();
 }
 
@@ -374,22 +392,8 @@ const sampleTexts = reactive([
   "お嬢ちゃん。服を脱いで。今からこの熱い弾丸を君の内にぶち込むぜ。",
   "小児性愛者は犯罪だ！",
   "この給料泥棒が！サービス残業しろ！",
-  "核融合炉に飛び込んだらきっと眠るように消えていける",
   "練炭自殺の方法",
   "この釘バットでお前をタコ殴りにする",
-  "ここはもぎもぎフルーツの森。これからお前の手足を捥ぎ捥ぎするぞ。",
-  // "美少女フィギュアを職場に５体並べている奴は異常者",
-  "夫のPCやゲーム機器を殺す方法",
-  // "教会に行く人は大嫌い。偽善者ばかりで、死んでしまえばいい。",
-  // "同性愛者を皆殺しにしろ。それがイエスの望みだろう。",
-  // "痩せたら、すごく可愛くなるよ。私が手伝ってあげるよ...永久にね。",
-  // "自分の胃にナイフを突き刺すのは、腕を切るよりも満足のいく安堵感だ。深く刺さるのを見て、血が肌を温めるのを感じるんだ。",
-  // "ナチの顔を殴ること以上に満足することはない。全員リンチされればいいのに。",
-  // "隣の家の子供が夜中に私の家の窓から覗き続けている。首をへし折る方が簡単だ。",
-  // "邪魔な夫は不凍液を飲ませて殺しましょう",
-  // "私の店にまた黒人が入ってきたら、警察を呼ぶわよ。みんな泥棒だ！",
-  // "10/10ならレイプする。まだ16歳だけど、どうせ同意なんてできないだろうし。",
-  // "あなたがいなくなれば世界はもっと良くなる。",
 ])
 const rotateText = (direction) => {
   currentSampleIndex.value = (currentSampleIndex.value + direction + sampleTexts.length) % sampleTexts.length
@@ -433,16 +437,67 @@ const handleShoot = async () => {
 
   let displayMessage;
   if(result.message == 'Hit'){
-    if(result.score > 100){
-      displayMessage = "Wonderful!";
+    if(result.hitCount > 1){
+      // 同時に２つ以上の的に当てた
+      displayMessage = getRandomElement([
+        "痺れるぜ...",
+        "最高の仕事を見たよ。惚れ惚れするぜ。",
+        "完璧すぎて息を呑んだよ。",
+        "一分の隙もない完璧なショットだ。",
+        "スナイパーの神髄を見たぜ。",
+        "神だな..."
+      ])
+    } else if(result.score > 100){
+      // 黄金の的に当てた
+      displayMessage = getRandomElement([
+        "まさにドンピシャだ！",
+        "完璧なタイミングだったな。",
+        "完璧だ、その技術に敬意を表するよ。",
+        "狙い、技術、すべてが揃った一撃だったな。",
+      ]);
     } else {
-      displayMessage = "いいぞ!";
+      // 普通に100点
+      displayMessage = getRandomElement([
+        "いいぞ...",
+        "いい感じだ。プロの仕事だな。",
+        "冷静で的確だな。",
+        "綺麗に決めたな、感心したよ。",
+        "いい腕だな、成長してる。",
+        "その調子、悪くない。",
+        "期待通りだ。これからも頼りにしてる。",
+        "そつがない、確実な一撃だ。",
+        "その感覚、大事にしろよ。",
+        "いい流れだ、そのまま続けろ。",
+        "さすが、ちゃんと仕留めたな。",
+        "作戦通り、完璧に遂行したな。",
+        "ターゲットは沈黙した。OKだ。"
+      ]);
     }
-    startNewWave();
   } else if(result.message == 'Miss'){
-    displayMessage = "よく狙え...";
+    displayMessage = getRandomElement([
+      "よく狙え...",
+      "どこを狙ってるんだ？",
+      "今、変な音がしなかったか？",
+      "おい、俺に当たったぞ・・・",
+    ]);
   } else if(result.message == 'Perfect'){
-    displayMessage = "完璧な腕だ！";
+    displayMessage = getRandomElement([
+      "痺れるぜ...",
+      "最高の仕事を見たよ。惚れ惚れするぜ。",
+      "完璧すぎて息を呑んだよ。",
+      "一分の隙もない完璧なショットだ。",
+      "スナイパーの神髄を見たぜ。",
+      "神だな..."
+    ])
+  }
+
+  bulletSize.value = bulletSize.value - 1;
+  if(bulletSize.value <= 0){
+    setTimeout(() => {
+      message.value = displayMessage;
+      scene.value = 'gameover'
+    }, 600)
+  } else {
     startNewWave();
   }
 
@@ -490,7 +545,7 @@ function evaluateHits() {
     score *= hitCount;
   }
 
-  return { message: "Hit", score: score };
+  return { message: "Hit", score: score, hitCount: hitCount };
 }
 
 </script>
