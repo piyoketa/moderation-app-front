@@ -56,7 +56,7 @@
             </v-avatar>
 
             <div v-if="lastModerationResponse.result.categories[target]" class="c-targetIcon position-absolute">
-              <img v-show="isShooting" :src="BreakIcon" style="width: 100%" />          
+              <img v-show="activeTargetNames.includes(target) && isShooting" :src="BreakIcon" style="width: 100%" />          
               <img v-show="!isShooting" :src="TargetIcon" style="width: 100%" />          
             </div>
           </div>

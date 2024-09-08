@@ -7,7 +7,8 @@
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" fetchpriority="high" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Antique&display=swap" media="print" onload='this.media="all"' />
     <title><%= htmlWebpackPlugin.options.title %></title>
   </head>
   <body>
@@ -16,9 +17,28 @@
     </noscript>
     <div id="app"></div>
     <!-- built files will be auto injected -->
-    <div>
-      フォント：異世明または異世ゴ
-      フリーダウンロード：https://booth.pm/ja/items/2291468
+    <div style="width: 900px; margin: auto; margin-top: 200px;margin-bottom: 200px;">
+      <h1>ゲーム紹介</h1>
+      <p>
+        OpenAI Moderation API を使ってみたいという気持ちだけで作成しました。まごうことなきクソゲーです。<br>
+      </p>
+
+      <h1 class="mt-5">使用素材</h1>
+      <h2 class="mt-3">画像</h2>
+      <ul class="pl-6">
+        <li><a href="https://www.photo-ac.com/" target="_blank" rel="noopener noreferrer">photoAC</a></li>
+        <li><a href="https://huggingface.co/black-forest-labs/FLUX.1-dev/blob/main/LICENSE.md" target="_blank" rel="noopener noreferrer">Flux.1[dev]</a>で生成</li>
+      </ul>
+      <h2 class="mt-3">効果音</h2>
+      <ul class="pl-6">
+        <li><a href="https://on-jin.com/" target="_blank" rel="noopener noreferrer">On-Jin 音人</a></li>
+        <li><a href="http://g-miya.net/" target="_blank" rel="noopener noreferrer">音楽サイト「G-Sound」</a></li>
+      </ul>
+      <h2 class="mt-3">フォント</h2>
+      <ul class="pl-6">
+        <li><a href="https://fonts.google.com/specimen/Zen+Antique" target="_blank" rel="noopener noreferrer">Google Fonts：Zen Antique</a></li>
+        <li><a href="https://booth.pm/ja/items/2291468" target="_blank" rel="noopener noreferrer">フロップデザイン：異世明・異世ゴ</a></li>
+      </ul>
     </div>
   </body>
 </html>
