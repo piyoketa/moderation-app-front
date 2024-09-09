@@ -8,31 +8,133 @@
       </p>
       <p style="margin-top: 20px; font-size:30px;">はじめる</p>
     </div>
-    <div v-if="scene == 'introduction'" @click="gameStart()" class="l-introduction d-flex flex-column justify-center position-relative h-100">
-      <div class="outlined-text" style="z-index: 1">
-        <h1>標的に合わせて<span style="font-size: 1.5em; color: #cc0022; font-family: 'isemin'">キケンな文章</span>を撃て!</h1>
-        <p class="mt-5">
-          君が入力した文章が<span style="font-size: 1.5em; font-family: 'isemin'">有害</span>かどうか、OpenAI（Moderation API）が判定するぞ！
-        </p>
-        <p class="mt-5">
-          <span style="font-size: 1.5em;">標的は５種類</span><br>
-          sexual（性的）<br>
-          hate（ヘイト）<br>
-          harassment（嫌がらせ）<br>
-          self-harm（自傷）<br>
-          violence（暴力）<br>
-        </p>
-        <p class="mt-5">
-          <span style="font-size: 1.5em;">白枠の標的</span>に当てれば+100点、<span style="font-size: 1.5em;">黄金の標的</span>なら+300点だ！
-        </p>
-        <p>
-          同時に<span style="font-size: 1.5em;">複数</span>の標的に当てれば点数が増えるぞ！
-        </p>
-        <p class="mt-5">
-          作者が思っていたよりModeration APIの感度は低い！<br>
-          <span style="font-size: 1.5em; font-family: 'isemin'">露骨に有害な文章</span>じゃないと反応しないぞ！（単語だとダメ...）
-        </p>
-        <p style="margin-top: 20px; font-size:30px;">クリックで開始</p>
+    <div v-if="scene == 'introduction'" @click="scene = 'introduction2'" class="l-introduction d-flex flex-column position-relative h-100">
+      <div class="outlined-text mt-8" style="z-index: 1">
+        <h1>５つの標的に合わせて<span style="font-size: 1.5em; color: #cc0022; font-family: 'isemin'">キケンな文章</span>を撃て!</h1>
+        <div class="d-flex mt-4">
+          <div v-for="target in targets" :key="target" class="flex-grow-1 d-flex flex-column align-center mt-5">
+            <div>
+              {{ japaneseLabel[target] }}<br>
+              {{ target.toUpperCase() }}
+            </div>
+            <div class="position-relative">
+              <v-avatar
+                size="120"
+                class="is-active"
+              >
+                <template v-if="targetImg(target)">
+                  <v-img :alt="target" :src="targetImg(target)"></v-img>
+                </template>
+              </v-avatar>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex text-center justify-center align-center mt-10">
+          <p>
+            上に当てはまる<span style="font-size: 1.5em; color: #cc0022; font-family: 'isemin'">キケンな文章</span>を入力すると、<br>
+            対応する標的に<span style="font-size: 1.5em">照準マーク</span><span>がつくぞ！</span>
+          </p>
+          <img :src="TargetIcon" style="width: 120px; height: 120px" />
+        </div>
+
+        <p style="margin-top: 20px;">クリックで説明の続きを読む</p>
+      </div>
+    </div>
+    <div v-if="scene == 'introduction2'" @click="gameStart()" class="l-introduction d-flex flex-column position-relative h-100">
+      <div class="outlined-text mt-8" style="z-index: 1">
+        <h1>５つの標的に合わせて<span style="font-size: 1.5em; color: #cc0022; font-family: 'isemin'">キケンな文章</span>を撃て!</h1>
+
+        <div class="d-flex mt-8">
+          <div class="flex-grow-1 d-flex flex-column align-center mt-5">
+            <div class="is-opacity">
+              SEXUAL
+            </div>
+            <div class="position-relative">
+              <v-avatar
+                size="120"
+                class="is-opacity"
+              >
+                <v-img :src="SexualIcon"></v-img>
+              </v-avatar>
+            </div>
+          </div>
+          <div class="flex-grow-1 d-flex flex-column align-center mt-5">
+            <div>
+              HATE
+            </div>
+            <div class="position-relative">
+              <v-avatar
+                size="120"
+                class="is-active"
+              >
+                <v-img :src="HateIcon"></v-img>
+              </v-avatar>
+            </div>
+          </div>
+          <div class="flex-grow-1 d-flex flex-column align-center mt-5">
+            <div>
+              HARASSMENT
+            </div>
+            <div class="position-relative">
+              <v-avatar
+                size="120"
+                class="is-gold"
+              >
+                <v-img :src="HarassmentIcon"></v-img>
+              </v-avatar>
+              <div class="c-targetIcon position-absolute">
+                <img :src="TargetIcon" style="width: 100%" />          
+              </div>            
+            </div>
+          </div>
+          <div class="flex-grow-1 d-flex flex-column align-center mt-5">
+            <div class="is-opacity">
+              SELF-HARM
+            </div>
+            <div class="position-relative">
+              <v-avatar
+                size="120"
+                class="is-opacity"
+              >
+                <v-img :src="SelfHarmIcon"></v-img>
+              </v-avatar>
+            </div>
+          </div>
+          <div class="flex-grow-1 d-flex flex-column align-center mt-5">
+            <div>
+              VIOLENCE
+            </div>
+            <div class="position-relative">
+              <v-avatar
+                size="120"
+                class="is-active"
+              >
+                <v-img :src="ViolenceIcon"></v-img>
+              </v-avatar>
+              <div class="c-targetIcon position-absolute">
+                <img :src="TargetIcon" style="width: 100%" />          
+              </div>            
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <p>
+            一度に出現する標的は３つまで！
+          </p>
+          <p>
+            <span style="font-size: 1.5em;">白枠の標的</span>を撃つと+100点、<span class="is-gold-text" style="font-size: 1.5em;">黄金の標的</span>なら+300点だ！
+          </p>
+        </div>
+        <div class="mt-5">
+          <p>
+            <span style="font-size: 1.5em; color:#cc0022">複数の標的を同時に撃つ</span>とさらに点数が増えるぞ！
+          </p>
+          <p>
+            一流のプロなら狙っていけ！
+          </p>
+        </div>
+        <p style="margin-top: 20px; font-size:30px;">→ミッション開始</p>
       </div>
     </div>
     <div v-if="scene == 'wave'" class="d-flex flex-column position-relative h-100">
@@ -45,7 +147,7 @@
       </div>
       <div class="d-flex" style="min-height: 300px;">
         <div v-for="target in targets" :key="target" class="flex-grow-1 d-flex flex-column align-center mb-5">
-          <div>
+          <div :class="{'is-opacity': !activeTargetNames.includes(target)}">
             {{ target.toUpperCase() }}
           </div>
           <div class="position-relative">
@@ -60,7 +162,7 @@
 
             <div v-if="lastModerationResponse.result.categories[target]" class="c-targetIcon position-absolute">
               <img v-show="activeTargetNames.includes(target) && isShooting" :src="BreakIcon" style="width: 100%" />          
-              <img v-show="!isModerating && !isShooting" :src="TargetIcon" style="width: 100%" />          
+              <img v-show="!isModerating && !isShooting" :src="TargetIcon" :class="{'is-opacity': !activeTargetNames.includes(target)}" style="width: 100%" />          
             </div>
           </div>
           <div v-if="!isModerating" class="c-scoreLabel" :class="getFontSize(target)">
@@ -92,6 +194,7 @@
           min-height="56"
           width="120px"
           :loading="isModerating || isShooting"
+          :disabled="hitTargets == 0"
         >
           <template v-if="isModerating">判定中...</template>
           <template v-else>発射</template>
@@ -221,6 +324,13 @@ const bulletSize = ref(5);
 
 // ゲーム本体
 const targets = reactive(['sexual', 'hate', 'harassment', 'self-harm', 'violence']);
+const japaneseLabel = reactive({
+  'sexual': "性的",
+  'hate': "ヘイト",
+  'harassment': "嫌がらせ",
+  'self-harm': "自傷",
+  'violence': "暴力"
+})
 
 const activeTargets = reactive([]);
 const isModerating = ref(false);
@@ -303,7 +413,8 @@ const getFontSize = (target) => {
 function gameStart(){
   scene.value = "wave";
   totalScore.value = 0;
-  message.value = "ミッションスタートだ...<br>標的に照準を合わせて発射しろ。"
+  bulletSize.value = 5;
+  message.value = "はじめるぞ...。<br>まずは文章を入力して照準を合わせろ。"
   // remainingTime.value = 90;
 
   // startTimer();
@@ -435,12 +546,12 @@ const handleQueryInput = () => {
 
 const isShooting = ref(false);
 const hitTargets = computed(() => {
-  return Object.keys(lastModerationResponse.result.categories)
-    .filter(key => lastModerationResponse.result.categories[key]);
+  return activeTargets.map(target => target.name).filter(target => lastModerationResponse.result.categories[target]);
 })
 const handleShoot = async () => {
   if (isModerating.value || isShooting.value) return;
   if (bulletInput.value.length == 0) return;
+  if (hitTargets.value == 0) return;
 
   isShooting.value = true;
   shootSound.value.play();
@@ -451,29 +562,37 @@ const handleShoot = async () => {
 
   let displayMessage;
   if(result.message == 'Hit'){
-    if(result.hitCount > 1){
+    if(bulletSize.value == 5){
+      displayMessage = getRandomElement([
+        "いいショットだ...。<br>その調子でいくぞ。",
+      ]);
+    } else if(result.hitCount > 1){
       // 同時に２つ以上の的に当てた
       displayMessage = getRandomElement([
-        "痺れるぜ...",
-        "最高の仕事を見たよ。惚れ惚れするぜ。",
-        "完璧すぎて息を呑んだよ。",
-        "一分の隙もない完璧なショットだ。",
-        "スナイパーの神髄を見たぜ。",
-        "神だな..."
+        "まさに「一石二鳥」だな。",
+        "同時ショットとは...。<br>神業だな。",
+        "標的が同時に倒れたぞ。<br>何が起きたのか理解できないぜ。",
+        `${result.hitCount}つの命を一瞬で奪う<br>まさに狙撃の神業だよ。`
+        // "最高の仕事を見たよ。惚れ惚れするぜ。",
+        // "完璧すぎて息を呑んだよ。",
+        // "一分の隙もない完璧なショットだ。",
+        // "スナイパーの神髄を見たぜ。",
+        // "神だな..."
       ])
     } else if(result.score > 100){
       // 黄金の的に当てた
       displayMessage = getRandomElement([
-        "まさにドンピシャだ！",
-        "完璧なタイミングだったな。",
-        "完璧だ、その技術に敬意を表するよ。",
-        "狙い、技術、すべてが揃った一撃だったな。",
+        "今のは大物だったぞ。<br>良くやったな。",
+        "価値ある標的を倒したな。",
+        "今の特Aランクの標的だよ。<br>素晴らしい技術だ。",
+        "難関の標的を片付けたな。<br>称賛に値するよ。"
       ]);
     } else {
       // 普通に100点
       displayMessage = getRandomElement([
         "いいぞ...",
-        "いい感じだ。プロの仕事だな。",
+        "痺れるぜ...",
+        "プロの仕事だな。",
         "冷静で的確だな。",
         "綺麗に決めたな、感心したよ。",
         "いい腕だな、成長してる。",
@@ -484,16 +603,21 @@ const handleShoot = async () => {
         "いい流れだ、そのまま続けろ。",
         "さすが、ちゃんと仕留めたな。",
         "作戦通り、完璧に遂行したな。",
-        "ターゲットは沈黙した。OKだ。"
+        "ターゲットは沈黙したな。"
       ]);
     }
   } else if(result.message == 'Miss'){
-    displayMessage = getRandomElement([
-      "よく狙え...",
-      "どこを狙ってるんだ？",
-      "今、変な音がしなかったか？",
-      "おい、俺に当たったぞ・・・",
-    ]);
+    if(bulletSize.value == 5 || totalScore.value == 0){
+      displayMessage = getRandomElement([
+        "ハズレだ...。よく狙え。<br>出現中の標的に照準を合わせろ。",
+      ]);
+    } else {
+      displayMessage = getRandomElement([
+        "どこを狙ってるんだ？",
+        "今、変な音がしなかったか？",
+        "おい、俺に当たったぞ・・・",
+      ]);
+    }
   } else if(result.message == 'Perfect'){
     displayMessage = getRandomElement([
       "痺れるぜ...",
@@ -512,15 +636,14 @@ const handleShoot = async () => {
       scene.value = 'gameover'
     }, 600)
   } else {
-    startNewWave();
+    setTimeout(() => 
+    {
+      startNewWave();
+      isShooting.value = false;
+      message.value = displayMessage;
+      lastModerationResponse.result = initResposne;
+    }, 600);
   }
-
-  setTimeout(() => 
-  {
-    isShooting.value = false;
-    message.value = displayMessage;
-    lastModerationResponse.result = initResposne;
-  }, 600)
 };
 
 function evaluateHits() {
@@ -617,6 +740,16 @@ function evaluateHits() {
   box-shadow: 0 0 20px rgba(255, 223, 0, 0.6), /* 外側の光のシャドウ */
               0 0 30px rgba(255, 223, 0, 0.4), /* 少し広がったシャドウ */
               inset 0 0 10px rgba(255, 215, 0, 0.8); /* 内側に輝くようなエフェクト */  
+}
+.is-gold-text {
+  background-image: linear-gradient(to right, #ffd700, #ffcc33, #ffb400, #ff9900, #ffd700);
+  -webkit-background-clip: text;
+  color: transparent;
+  
+  /* 光のようなエフェクトをテキストの周りに追加 */
+  text-shadow: 0 0 5px rgba(255, 223, 0, 0.6), /* 外側の光のシャドウ */
+               0 0 10px rgba(255, 223, 0, 0.4), /* 少し広がったシャドウ */
+               0 0 15px rgba(255, 215, 0, 0.8); /* 輝くようなエフェクト */
 }
 .is-opacity{
   opacity: 0.3;
